@@ -23,7 +23,7 @@ public class DartFunctionType() : DartAbstractType(ClassId.kFunctionTypeCid), IH
         setters.AddRef(e => e.ResultType);
         setters.AddRef(e => e.ParameterTypes);
         setters.AddRef(e => e.NamedParameterNames);
-        setters.AddValue(e => e.Flags);
+        setters.AddValue(e => e.Flags, (s, ref _) => s.Read<byte>());
         setters.AddValue(e => e.PackedParameterCounts);
         setters.AddValue(e => e.PacketTypeParameterCounts);
     }

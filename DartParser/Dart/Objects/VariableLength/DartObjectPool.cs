@@ -40,8 +40,8 @@ namespace DartParser.Dart.Objects.VariableLength
             public static void InitPropertySetters(DartPropertySetters<Entry> setters, SemVersion version, SnapshotKind kind, bool isProduct)
             {
                 setters.AddValue(e => e.EntryBits);
-                setters.AddValueIf(e => e.RawValue, e => e.SnapshotBehaviour == SnapshotBehaviour.kSnapshotable && e.EntryType == EntryType.kImmediate);
-                setters.AddRefIf(e => e.RawObject, e => e.SnapshotBehaviour == SnapshotBehaviour.kSnapshotable && e.EntryType == EntryType.kTaggedObject);
+                setters.AddValueIf(e => e.RawValue, (ref e) => e.SnapshotBehaviour == SnapshotBehaviour.kSnapshotable && e.EntryType == EntryType.kImmediate);
+                setters.AddRefIf(e => e.RawObject, (ref e) => e.SnapshotBehaviour == SnapshotBehaviour.kSnapshotable && e.EntryType == EntryType.kTaggedObject);
             }
         }
 

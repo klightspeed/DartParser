@@ -1,4 +1,6 @@
-﻿namespace DartParser.Dart.Objects.BaseTypes
+﻿using System.Diagnostics;
+
+namespace DartParser.Dart.Objects.BaseTypes
 {
     public class DartNumber(ClassId cid) : DartInstance(cid)
     {

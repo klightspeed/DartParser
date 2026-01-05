@@ -1,10 +1,13 @@
 ﻿using DartParser.Dart.Objects.BaseTypes;
 using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.Other;
 using DartParser.Dart.Objects.VariableLength;
 using Semver;
+using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
+[DebuggerDisplay("{Type} {Url}")]
 public class DartScript() : DartObject(ClassId.kScriptCid), IHasPropertySetters<DartScript>
 {
     public DartString? Url { get; set; }

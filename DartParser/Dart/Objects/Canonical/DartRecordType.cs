@@ -18,7 +18,7 @@ namespace DartParser.Dart.Objects.Canonical
             setters.AddRef(e => e.Hash);
             setters.AddRef(e => e.Shape);
             setters.AddRef(e => e.FieldTypes);
-            setters.AddValue(e => e.Flags);
+            setters.AddValue(e => e.Flags, (s, ref _) => s.Read<byte>());
         }
     }
 }

@@ -19,7 +19,7 @@ public class InstanceDeserializationCluster(bool isCanonical, bool isImmutable, 
         var count = snapshot.ReadUnsigned();
         NextFieldOffsetInWords = snapshot.Read<ulong>();
         InstanceSizeInWords = snapshot.Read<ulong>();
-        Debug.Assert(NextFieldOffsetInWords < InstanceSizeInWords);
+        Debug.Assert(NextFieldOffsetInWords <= InstanceSizeInWords);
         Debug.Assert(NextFieldOffsetInWords < 64);
         Entries = new DartUserDefinedInstance[count];
 
@@ -40,7 +40,7 @@ public class InstanceDeserializationCluster(bool isCanonical, bool isImmutable, 
 
         foreach (var entry in Entries)
         {
-            for (int i = 0; i < (int)NextFieldOffsetInWords; i++)
+            for (int i = 2; i < (int)NextFieldOffsetInWords; i++)
             {
                 var isUnboxedField = ((unboxedFields >> i) & 1) != 0;
 
@@ -49,7 +49,7 @@ public class InstanceDeserializationCluster(bool isCanonical, bool isImmutable, 
                     entry.Fields[i].IsRawValue = true;
                     entry.Fields[i].RawValue = snapshot.Read<uint>();
 
-                    if (snapshot.Is64Bit && !snapshot.SnapshotFeatures.Contains("compressed-pointers"))
+                    if (snapshot.Is64Bit)
                     {
                         entry.Fields[i].RawValue |= (ulong)snapshot.Read<uint>() << 32;
                     }

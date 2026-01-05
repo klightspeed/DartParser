@@ -3,10 +3,12 @@ using DartParser.Dart.Objects.Canonical;
 using DartParser.Dart.Objects.Other;
 using DartParser.Dart.Objects.VariableLength;
 using Semver;
+using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySetters<DartFunction>
+[DebuggerDisplay("{Type} {Name?.Value}")]
+public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySetters<DartFunction>, IHasOwner
 {
     public enum Kind
     {
@@ -38,7 +40,7 @@ public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySett
         kSyncGen = kGeneratorBit,
         kAsyncGen = kAsyncBit | kGeneratorBit,
     }
-    
+
     public DartString? Name { get; set; }
     public DartObject? Owner { get; set; }
     public DartFunctionType? Signature { get; set; }

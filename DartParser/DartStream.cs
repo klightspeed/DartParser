@@ -6,7 +6,7 @@ using System.Runtime.Intrinsics;
 
 namespace DartParser
 {
-    public class DartStream(Memory<byte> buffer, bool isBigEndian, bool is64Bit)
+    public class DartStream(ReadOnlyMemory<byte> buffer, bool isBigEndian, bool is64Bit)
     {
         const int kDataBitsPerByte = 7;
         const int kByteMask = (1 << kDataBitsPerByte) - 1;
@@ -16,14 +16,14 @@ namespace DartParser
         const int kEndByteMarker = (byte.MaxValue - kMaxDataPerByte);
         const int kEndUnsignedByteMarker = (byte.MaxValue - kMaxUnsignedDataPerByte);
 
-        private readonly Memory<byte> Buffer = buffer;
-        private Memory<byte> Current = buffer;
+        private readonly ReadOnlyMemory<byte> Buffer = buffer;
+        private ReadOnlyMemory<byte> Current = buffer;
 
         public bool IsBigEndian { get; } = isBigEndian;
         public bool Is64Bit { get; } = is64Bit;
         public bool IsOppositeEndianness => IsBigEndian == BitConverter.IsLittleEndian;
 
-        public static DartStream Empty { get; } = new DartStream(Memory<byte>.Empty, false, false);
+        public static DartStream Empty { get; } = new DartStream(ReadOnlyMemory<byte>.Empty, false, false);
 
         public void ReadBytes(Span<byte> buffer, int len)
         {
@@ -58,15 +58,18 @@ namespace DartParser
 
         public int PendingBytes => Current.Length;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public ReadOnlyMemory<byte> PendingMemory => Current;
+
+        //[MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void Align(int alignment, int offset = 0)
         {
             if (alignment <= 0) throw new ArgumentException("alignment must be greater than 0", nameof(alignment));
             if (offset < 0) throw new ArgumentException("offset must be greater than or equal to 0", nameof(offset));
             if (offset >= alignment) throw new ArgumentException("offset must be less than alignment", nameof(offset));
             if ((alignment & (alignment - 1)) != 0) throw new ArgumentException("alignment must be a power of 2", nameof(offset));
-            offset += Position & (1 - alignment);
-            if (offset >= alignment) offset -= alignment;
+            var align = Position & (alignment - 1);
+            offset -= align;
+            if (offset < 0) offset += alignment;
             Advance(offset);
         }
 

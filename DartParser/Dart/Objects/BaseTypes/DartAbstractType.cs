@@ -7,5 +7,5 @@ public class DartAbstractType(ClassId cid) : DartInstance(cid)
     public DartObject? TypeTestStub { get; set; }
     public DartObject? Hash { get; set; }
 
-    public byte Flags { get; set; }
+    public uint Flags { get; set; }
 }

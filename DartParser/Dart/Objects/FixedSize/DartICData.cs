@@ -4,7 +4,7 @@ using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartICData() : DartCallSiteData(ClassId.kICDataCid), IHasPropertySetters<DartICData>
+public class DartICData() : DartCallSiteData(ClassId.kICDataCid), IHasPropertySetters<DartICData>, IHasOwner
 {
     public DartArray? Entries { get; set; }
     public DartAbstractType? ReceiversStaticType { get; set; }

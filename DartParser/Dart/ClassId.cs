@@ -222,9 +222,9 @@ namespace DartParser.Dart
         kVectorCid,
         kJSRegExpCid,
         kDeoptInfoCid,
-        
+
         RenamedCidFlag = 0x2_0000_0000,
-        
+
         kLinkedHashMapCid = kMapCid | RenamedCidFlag,
         kImmutableLinkedHashMapCid = kConstMapCid | RenamedCidFlag,
         kLinkedHashSetCid = kSetCid | RenamedCidFlag,
@@ -290,7 +290,7 @@ namespace DartParser.Dart
             {
                 if (cid < ClassTable.kFirstTypedDataCid || cid > ClassTable.kLastTypedDataCid)
                     return TypedDataCidRemainder.Invalid;
-                
+
                 return (TypedDataCidRemainder)((cid - ClassTable.kFirstTypedDataCid) % (ulong)TypedDataCidRemainder.NumRemainders);
             }
 

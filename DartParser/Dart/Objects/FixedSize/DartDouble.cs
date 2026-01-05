@@ -1,7 +1,9 @@
 ﻿using DartParser.Dart.Objects.BaseTypes;
 using Semver;
+using System.Diagnostics;
 namespace DartParser.Dart.Objects.FixedSize;
 
+[DebuggerDisplay("{Type} {Value}")]
 public class DartDouble() : DartNumber(ClassId.kDoubleCid), IHasPropertySetters<DartDouble>
 {
     public double Value { get; set; }

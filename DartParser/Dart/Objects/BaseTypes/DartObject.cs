@@ -1,4 +1,6 @@
-﻿using Semver;
+﻿using DartParser.Dart.Objects.Singletons;
+using Semver;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace DartParser.Dart.Objects.BaseTypes
@@ -8,10 +10,13 @@ namespace DartParser.Dart.Objects.BaseTypes
         static abstract DartObject Default();
     }
 
+    [DebuggerDisplay("{Type} {Description}")]
     public class DartObject : IDartObject, IHasObjectLayout<DartObject>
     {
         public virtual string? Description { get; init; }
         public ClassId Type { get; set; }
+
+        public List<(DartObject Link, string PropertyName)> LinkedObjects { get; } = [];
 
         public DartObject(ClassId type)
         {
@@ -25,7 +30,7 @@ namespace DartParser.Dart.Objects.BaseTypes
             this.Type = type;
         }
 
-        public static DartObject Null { get; } = new("null", ClassId.kNullCid);
+        public static DartNull Null => DartNull.Instance;
 
         public static DartObject Default() => Null;
 

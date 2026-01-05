@@ -2,9 +2,14 @@
 using DartParser.Dart;
 using DartParser.Dart.Clusters.BaseTypes;
 using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.FixedSize;
+using DartParser.Dart.Objects.Other;
 using DartParser.Dart.Objects.ToCheck;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 using System.Buffers.Binary;
+using System.Collections;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -44,7 +49,7 @@ namespace DartParser
         public DartStream Stream { get; set; } = DartStream.Empty;
         public DartInstructionsTable InstructionsTable { get; set; } = new DartInstructionsTable();
         public DartInstructionsSection InstructionsSection { get; set; } = new DartInstructionsSection();
-        public ReadOnlyMemory<byte> RemainingInstructionBytes { get; set; } = Memory<byte>.Empty;
+        public ReadOnlyMemory<byte> DataImage { get; set; } = Memory<byte>.Empty;
         public Dictionary<Type, DartPropertySetters> Setters { get; set; } = [];
 
         public bool IsProduct => SnapshotFeatures.Contains("product");
@@ -63,6 +68,10 @@ namespace DartParser
             SnapshotFeatures = Encoding.Latin1.GetString(data.Span.Slice(52, snapshotFeaturesEnd)).Split(' ');
             HeaderLength = (ulong)(52 + snapshotFeaturesEnd + 1);
             var stream = new DartStream(data[..(int)Length], IsBigEndian, Is64Bit);
+            var imageStream = new DartStream(data, IsBigEndian, Is64Bit);
+            imageStream.Advance((int)Length);
+            imageStream.Align(64);
+            DataImage = imageStream.PendingMemory;
             stream.Advance((int)HeaderLength);
             Stream = stream;
             NumBaseObjects = stream.ReadUnsigned();
@@ -80,14 +89,14 @@ namespace DartParser
             Debug.Assert(Clusters.Count == 0);
 
             InstructionsSection = GetInstructionsSection();
-            RemainingInstructionBytes = InstructionsSection.Data;
+            InstructionsTable.Init(this);
 
             for (ulong i = 0; i < NumClusters; i++)
             {
                 var cluster = DeserializationClusterBase.Create(this);
                 Clusters.Add(cluster);
                 Debug.Assert(ReferenceEquals(Clusters[(int)i], cluster));
-                
+
                 cluster.ReadAllocate(this);
             }
 
@@ -97,6 +106,81 @@ namespace DartParser
             {
                 Clusters[(int)i].ReadFill(this);
             }
+
+            foreach (var obj in this.Objects)
+            {
+                foreach (var prop in obj.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+                {
+                    if (!prop.CanWrite) continue;
+                    var propType = prop.PropertyType;
+                    var elementType = propType.HasElementType ? propType.GetElementType() : null;
+
+                    if (propType.IsPrimitive || elementType?.IsPrimitive == true) continue;
+                    if (prop.GetValue(obj) is not { } propVal) continue;
+
+                    switch (prop.GetValue(obj))
+                    {
+                        case null:
+                        case string:
+                        case Vector128<int>:
+                        case Vector128<float>:
+                        case Vector128<double>:
+                        case Vector128<int>[]:
+                        case Vector128<float>[]:
+                        case Vector128<double>[]:
+                        case ClassId:
+                        case DartRefId:
+                        case List<DartObject>:
+                        case List<(DartObject, string)>:
+                        case List<DartClass>:
+                        case List<DartCode>:
+                            break;
+                        case DartArray array:
+                            array.LinkedObjects.Add((obj, prop.Name));
+
+                            for (int i = 0; i < array.Data.Length; i++)
+                            {
+                                array.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data[{i}]"));
+                            }
+
+                            break;
+                        case DartGrowableObjectArray array:
+                            array.LinkedObjects.Add((obj, prop.Name));
+
+                            for (int i = 0; i < array.Data?.Data.Length; i++)
+                            {
+                                array.Data.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data->Data[{i}]"));
+                            }
+
+                            break;
+                        case DartObject linked:
+                            linked.LinkedObjects.Add((obj, prop.Name));
+                            break;
+                        case DartObject[] list:
+                            for (int i = 0; i < list.Length; i++)
+                            {
+                                list[i]?.LinkedObjects.Add((obj, $"{prop.Name}[{i}]"));
+                            }
+                            break;
+                        case IList list when elementType?.IsValueType == true:
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                foreach (var subprop in list[i]?.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance) ?? [])
+                                {
+                                    if (subprop.GetValue(list[i]) is DartObject subobj)
+                                    {
+                                        subobj.LinkedObjects.Add((obj, $"{prop.Name}[{i}].{subprop.Name}"));
+                                    }
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            Isolate.PopulateObjects(this);
 
             return true;
         }
@@ -302,15 +386,18 @@ namespace DartParser
         private DartInstructionsSection GetInstructionsSection()
         {
             var stream = new DartStream(SnapshotInstructions, IsBigEndian, Is64Bit);
-            
+
             var imageSize = stream.ReadRaw<Word>().Value;
             var instructionSectionOffset = stream.ReadRaw<Word>().Value;
-            
-            stream.Align(64);
-            
-            var cidTag = stream.ReadRaw<UWord>().Value;
 
-            Debug.Assert(ClassTable.LookupClassId(cidTag >> 12) == ClassId.kInstructionsSectionCid);
+            Debug.Assert(instructionSectionOffset >= 64 && (instructionSectionOffset & (instructionSectionOffset - 1)) == 0);
+
+            stream.Align((int)instructionSectionOffset);
+
+            var cidTag = stream.ReadRaw<UWord>().Value;
+            var cid = ClassTable.LookupClassId(cidTag >> 12);
+
+            Debug.Assert(cid == ClassId.kInstructionsSectionCid);
 
             var payloadLength = stream.ReadRaw<Word>().Value;
             var bssOffset = stream.ReadRaw<Word>().Value;
@@ -342,6 +429,19 @@ namespace DartParser
         public T? GetObjectAt<T>(ulong offset)
             where T : DartObject
         {
+            var stream = new DartStream(DataImage[(int)offset..], IsBigEndian, Is64Bit);
+            var cidTags = stream.ReadRaw<UWord>();
+            var cidval = (cidTags.Value >> 12) & 0xFFFFF;
+            var cid = ClassTable.LookupClassId(cidval);
+
+            switch (cid)
+            {
+                case ClassId.kOneByteStringCid:
+                case ClassId.kTwoByteStringCid:
+                    Debug.Assert(typeof(T) == typeof(DartString));
+                    return (T)(DartObject)DartString.Create(cidTags, cid, stream);
+            }
+
             throw new NotSupportedException();
         }
     }

@@ -3,7 +3,7 @@ using Semver;
 
 namespace DartParser.Dart.Objects.Canonical;
 
-public class DartTypeParameter() : DartAbstractType(ClassId.kTypeParameterCid), IHasPropertySetters<DartTypeParameter>
+public class DartTypeParameter() : DartAbstractType(ClassId.kTypeParameterCid), IHasPropertySetters<DartTypeParameter>, IHasOwner
 {
     public DartObject? Owner { get; set; }
     public ushort Base { get; set; }
@@ -16,6 +16,6 @@ public class DartTypeParameter() : DartAbstractType(ClassId.kTypeParameterCid), 
         setters.AddRef(e => e.Owner);
         setters.AddValue(e => e.Base);
         setters.AddValue(e => e.Index);
-        setters.AddValue(e => e.Flags);
+        setters.AddValue(e => e.Flags, (s, ref _) => s.Read<byte>());
     }
 }

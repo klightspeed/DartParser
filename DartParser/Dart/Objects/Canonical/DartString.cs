@@ -8,8 +8,11 @@ namespace DartParser.Dart.Objects.Canonical;
 public class DartString : DartInstance
 {
     public ulong Length { get; private set; }
+    public uint Hash { get; private set; }
 
     public string? Value { get; private set; }
+    public byte[]? OneByteData { get; private set; }
+    public char[]? TwoByteData { get; private set; }
 
     public DartString(ClassId cid) : base(cid)
     {
@@ -48,15 +51,48 @@ public class DartString : DartInstance
 
         if (this.Type == ClassId.kOneByteStringCid)
         {
-            this.Value = Encoding.Latin1.GetString(snapshot.ReadBytes((int)Length));
+            this.OneByteData = [.. snapshot.ReadBytes((int)Length)];
+            this.Value = Encoding.Latin1.GetString(this.OneByteData);
         }
         else if (this.Type == ClassId.kTwoByteStringCid)
         {
             this.Value = Encoding.Unicode.GetString(snapshot.ReadBytes((int)Length * 2));
+            this.TwoByteData = [.. this.Value];
         }
         else
         {
             throw new InvalidOperationException($"Invalid string type {this.Type}");
         }
+    }
+
+    public static DartString Create(UWord cidTags, ClassId cid, DartStream stream)
+    {
+        var str = new DartString(cid);
+
+        if (stream.Is64Bit)
+        {
+            str.Hash = (uint)(cidTags.Value >> 32);
+        }
+        else
+        {
+            str.Hash = stream.ReadRaw<uint>();
+        }
+
+        var smilen = stream.ReadRaw<UWord>().Value;
+        Debug.Assert((smilen & 1) == 0);
+        str.Length = smilen >> 1;
+
+        if (cid == ClassId.kOneByteStringCid)
+        {
+            str.OneByteData = [.. stream.ReadBytes((int)str.Length)];
+            str.Value = Encoding.Latin1.GetString(str.OneByteData);
+        }
+        else if (cid == ClassId.kTwoByteStringCid)
+        {
+            str.Value = Encoding.Unicode.GetString(stream.ReadBytes((int)str.Length * 2));
+            str.TwoByteData = [.. str.Value];
+        }
+
+        return str;
     }
 }

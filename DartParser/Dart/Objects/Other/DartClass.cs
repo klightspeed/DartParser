@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.Other;
 
-[DebuggerDisplay("{Type} {ClassId}")]
+[DebuggerDisplay("{Type} {ClassId} {Name?.Value} ({Library?.Name?.Value})")]
 public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<DartClass>
 {
     public DartClass(ClassId cid) : this()
@@ -44,7 +44,7 @@ public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<Da
     public ulong TokenPosition { get; set; }
     public ulong EndTokenPosition { get; set; }
     public ClassId ImplementorCid { get; set; }
-    public ulong StateBits { get; set; }        
+    public ulong StateBits { get; set; }
     public ulong UnboxedFieldsBitmap { get; set; }
 
     public static void InitPropertySetters(DartPropertySetters<DartClass> setters, SemVersion version, SnapshotKind kind, bool isProduct)
@@ -57,6 +57,7 @@ public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<Da
         setters.AddRef(e => e.FunctionsHashTable);
         setters.AddRef(e => e.Fields);
         setters.AddRef(e => e.FieldOffsets);
+        setters.AddRef(e => e.Interfaces);
         setters.AddRef(e => e.Script);
         setters.AddRef(e => e.Library);
         setters.AddRef(e => e.TypeParameters);
@@ -83,7 +84,12 @@ public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<Da
         }
 
         setters.AddCid(e => e.ClassId);
-        setters.AddValue(e => e.KernelOffset);
+
+        if (kind != SnapshotKind.kFullAOT)
+        {
+            setters.AddValue(e => e.KernelOffset);
+        }
+
         setters.AddValue(e => e.InstanceSizeInWords);
         setters.AddValue(e => e.NextFieldOffsetInWords);
         setters.AddValue(e => e.TypeArgumentsFieldOffsetInWords);
@@ -98,6 +104,6 @@ public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<Da
         }
 
         setters.AddValue(e => e.StateBits);
-        setters.AddValueIf(e => e.UnboxedFieldsBitmap, e => e.ClassId < ClassId.kTopLevelCidOffset);
+        setters.AddValueIf(e => e.UnboxedFieldsBitmap, (ref e) => e.ClassId < ClassId.kTopLevelCidOffset);
     }
 }

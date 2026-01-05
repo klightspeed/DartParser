@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace DartParser.Dart.Objects.Other;
 
-public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<DartCode>
+public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<DartCode>, IHasOwner
 {
     public DartObjectPool? ObjectPool { get; set; }
     public DartInstructions? Instructions { get; set; }
@@ -37,7 +37,6 @@ public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<Dart
     public ulong ActiveOffset { get; set; }
     public ulong ActiveUncheckedOffset { get; set; }
     public ulong InstructionsLength { get; set; }
-    public List<uint> Data { get; set; } = [];
 
     public bool Optimized => (StateBits & 1) != 0;
     public bool ForceOptimized => (StateBits & 2) != 0;
@@ -49,12 +48,12 @@ public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<Dart
     {
         if (kind == SnapshotKind.kFullJIT)
             setters.AddRef(e => e.ObjectPool);
-        
+
         setters.AddRef(e => e.Owner);
         setters.AddRef(e => e.ExceptionHandlers);
         setters.AddRef(e => e.PCDescriptors);
         setters.AddRef(e => e.CatchEntry);
-        
+
         if (kind == SnapshotKind.kFullJIT)
             setters.AddRef(e => e.CompressedStackMaps);
 
@@ -84,26 +83,36 @@ public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<Dart
 
         var (monoOffset, polyOffset) = (snapshot.Architecture, snapshot.Is64Bit, snapshot.Kind) switch
         {
-            (Architecture.X64, true, SnapshotKind.kFullAOT) => (8, 22),
-            (Architecture.X86, false, SnapshotKind.kFullAOT) => (0, 0),
-            (Architecture.Arm, false, SnapshotKind.kFullAOT) => (0, 16),
-            (Architecture.Arm64, true, SnapshotKind.kFullAOT) => (8, 24),
-            (Architecture.RiscV64, true, SnapshotKind.kFullAOT) => (6, 18),
-            (Architecture.X64, true, SnapshotKind.kFullJIT) => (8, 42),
-            (Architecture.X86, false, SnapshotKind.kFullJIT) => (6, 36),
-            (Architecture.Arm, false, SnapshotKind.kFullJIT) => (0, 44),
-            (Architecture.Arm64, true, SnapshotKind.kFullJIT) => (8, 52),
-            (Architecture.RiscV64, true, SnapshotKind.kFullJIT) => (6, 44),
-            _ => (0, 0)
+            (Architecture.X64, true, SnapshotKind.kFullAOT) => (8u, 22u),
+            (Architecture.X86, false, SnapshotKind.kFullAOT) => (0u, 0u),
+            (Architecture.Arm, false, SnapshotKind.kFullAOT) => (0u, 16u),
+            (Architecture.Arm64, true, SnapshotKind.kFullAOT) => (8u, 24u),
+            (Architecture.RiscV64, true, SnapshotKind.kFullAOT) => (6u, 18u),
+            (Architecture.X64, true, SnapshotKind.kFullJIT) => (8u, 42u),
+            (Architecture.X86, false, SnapshotKind.kFullJIT) => (6u, 36u),
+            (Architecture.Arm, false, SnapshotKind.kFullJIT) => (0u, 44u),
+            (Architecture.Arm64, true, SnapshotKind.kFullJIT) => (8u, 52u),
+            (Architecture.RiscV64, true, SnapshotKind.kFullJIT) => (6u, 44u),
+            _ => (0u, 0u)
         };
 
         if (snapshot.Kind == SnapshotKind.kFullAOT)
         {
+            var index = snapshot.InstructionsTable.Code.Count;
+            var entry = snapshot.InstructionsTable.ROData.Entries.Span[index];
+
             var payloadInfo = snapshot.ReadUnsigned();
             var uncheckedOffset = payloadInfo >> 1;
             var hasMonomorphicEntryPoint = (payloadInfo & 1) != 0;
             this.UncheckedOffset = uncheckedOffset;
             this.HasMonomorphicEntryPoint = hasMonomorphicEntryPoint;
+            var entryOffset = hasMonomorphicEntryPoint ? polyOffset : 0;
+            var entryMonoOffset = hasMonomorphicEntryPoint ? monoOffset : 0;
+            EntryPoint = entry.PCOffset + entryOffset;
+            UncheckedEntryPoint = EntryPoint + uncheckedOffset;
+            MonomorphicEntryPoint = entry.PCOffset + entryMonoOffset;
+            MonomorphicUncheckedEntryPoint = MonomorphicEntryPoint + uncheckedOffset;
+            snapshot.InstructionsTable.Code.Add(this);
         }
         else if (snapshot.Kind == SnapshotKind.kFullJIT)
         {

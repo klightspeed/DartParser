@@ -10,32 +10,10 @@ public class TypeArgumentsDeserializationCluster(bool isCanonical, bool isImmuta
 {
     public override void ReadAllocate(Snapshot snapshot)
     {
-        int count = (int)snapshot.ReadUnsigned();
-        Entries = new DartTypeArguments[count];
-
-        for (int i = 0; i < count; i++)
-        {
-            var entry = new DartTypeArguments(snapshot.ReadUnsigned());
-            Entries[i] = entry;
-            snapshot.Objects.Add(entry);
-        }
-
+        Entries = ReadAllocateVariableLength<DartTypeArguments, DartAbstractType>(snapshot, ClassId);
         base.BuildCanonicalSetFromLayout(snapshot);
     }
 
     public override void ReadFill(Snapshot snapshot)
-    {
-        foreach (var entry in Entries)
-        {
-            entry.Count2 = snapshot.ReadUnsigned();
-            entry.Hash = snapshot.ReadUnsigned();
-            entry.Nullability = snapshot.ReadUnsigned();
-            entry.Instantiations = snapshot.ReadRef<DartArray>();
-            
-            for (ulong i = 0; i < entry.Count2; i++)
-            {
-                entry.Types.Add(snapshot.ReadRef<DartAbstractType>());
-            }
-        }
-    }
+        => ReadFillVariableLengthRef<DartTypeArguments, DartAbstractType>(snapshot, Entries);
 }

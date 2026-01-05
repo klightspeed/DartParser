@@ -900,14 +900,14 @@ namespace DartParser
         public DartArray EmptySubtypeTestCacheArray { get; }
             = new(ClassId.kArrayCid) { Description = "<empty_subtype_test_cache_array>" };
 
-        public DartClass DynamicType { get; }
+        public DartAbstractType DynamicType { get; }
             = new(ClassId.kDynamicCid) { Description = "<dynamic type>" };
 
-        public DartClass VoidType { get; }
+        public DartAbstractType VoidType { get; }
             = new(ClassId.kVoidCid) { Description = "<void type>" };
 
         public DartTypeArguments EmptyTypeArguments { get; }
-             = new(0) { Description = "<empty_type_arguments>" };
+             = new() { Description = "<empty_type_arguments>" };
 
         public DartBool True => DartBool.True;
 
@@ -973,15 +973,17 @@ namespace DartParser
         public DartBytecode DynamicInvocationForwarderBytecode { get; }
             = new() { Description = "DynamicInvocationForwarderBytecode" };
 
-        public DartObject NeverType { get; }
-            = new("<never type>", ClassId.kTypeCid);
+        public DartAbstractType NeverType { get; }
+            = new(ClassId.kNeverCid) { Description = "<never type>" };
 
-        public ImmutableArray<DartTypeArguments> CachedArgsDescriptors { get; } = [
+        public ImmutableArray<DartArray> CachedArgsDescriptors { get; } = [
             .. new[] { 31, 2 }.SelectMany((n, i) =>
                 Enumerable.Range(1, n).Select(n =>
-                    new DartTypeArguments((ulong)n)
+                    new DartArray()
                     {
-                        Description = $"<cached arguments descriptor[{i},{n}]>"
+                        Length = (ulong)n,
+                        Description = $"<cached arguments descriptor[{i},{n}]>",
+                        Data = new DartObject[n]
                     }
                 )
             )

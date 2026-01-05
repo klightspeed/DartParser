@@ -5,7 +5,7 @@ using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartField() : DartObject(ClassId.kFieldCid), IHasPropertySetters<DartField>
+public class DartField() : DartObject(ClassId.kFieldCid), IHasPropertySetters<DartField>, IHasOwner
 {
     public DartString? Name { get; set; }
     public DartObject? Owner { get; set; }
