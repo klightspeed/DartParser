@@ -2,14 +2,8 @@
 
 namespace DartParser;
 
-public static class VersionTable
+public static partial class VersionTable
 {
-    private static HashSet<string> InconsistentClassIdHashes = [
-        "adf800e7fc7e5cef207374140b30ff46",
-        "f2ed175878eb1ab377414135b301edb8",
-        "c6f170657f1361110e2aed121c627869"
-    ];
-
     private static readonly Dictionary<string, SemVersion> HashVersions = new()
     {
         ["90d0d9a83bbeda457ff3571c01d8b699"] = SemVersion.Parse("1.6.2-edge-10+863b0d3"),
@@ -3790,19 +3784,4 @@ public static class VersionTable
         ["b018c2a8fd84377f77f1111c5404a564"] = SemVersion.Parse("3.11.0-255.0.dev-edge-1+674a42d"),
         ["78da37fed6bf1489361a312568249f3f"] = SemVersion.Parse("3.11.0-268.0.dev-edge-1+a949c74"),
     };
-
-    public static SemVersion GetVersionFromSnapshotHash(string hash)
-    {
-        if (InconsistentClassIdHashes.Contains(hash))
-        {
-            throw new NotSupportedException($"Class ids cannot be determined for snapshot hash {hash}");
-        }
-
-        if (!HashVersions.TryGetValue(hash, out var version))
-        {
-            throw new NotSupportedException($"Unknown hash {hash}");
-        }
-
-        return version;
-    }
 }
