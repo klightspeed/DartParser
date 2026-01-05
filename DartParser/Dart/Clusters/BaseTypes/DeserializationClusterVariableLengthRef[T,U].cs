@@ -3,7 +3,7 @@ using Semver;
 
 namespace DartParser.Dart.Clusters.BaseTypes;
 
-public class DeserializationClusterVariableLengthRef<T,U>(bool isCanonical, bool isImmutable, ClassId cid, bool isRootUnit, SemVersion version)
+public class DeserializationClusterVariableLengthRef<T, U>(bool isCanonical, bool isImmutable, ClassId cid, bool isRootUnit, SemVersion version)
     : DeserializationClusterFixedSize<T>(isCanonical, isImmutable, cid, isRootUnit, version)
     where T : DartObject, IHasPropertySetters<T>, IHasData<U>, new()
     where U : DartObject

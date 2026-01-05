@@ -1,6 +1,4 @@
-﻿using DartParser.Dart;
-
-namespace DartParser.Dart.Objects.BaseTypes;
+﻿namespace DartParser.Dart.Objects.BaseTypes;
 
 public class DartError(ClassId cid) : DartObject(cid)
 {

@@ -5,7 +5,8 @@ namespace DartParser;
 
 public static class DartObjectExtensions
 {
-    extension(DartObject? o) {
+    extension(DartObject? o)
+    {
         public T? Cast<T>()
             where T : DartObject
         {

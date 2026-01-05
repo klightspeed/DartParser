@@ -1,7 +1,6 @@
 using DartParser.Dart.Clusters.BaseTypes;
 using DartParser.Dart.Objects.BaseTypes;
 using DartParser.Dart.Objects.Canonical;
-using DartParser.Dart.Objects.VariableLength;
 
 namespace DartParser.Dart.Clusters.Canonical;
 

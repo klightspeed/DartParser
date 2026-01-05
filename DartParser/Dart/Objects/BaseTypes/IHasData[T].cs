@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace DartParser.Dart.Objects.BaseTypes;
 
-namespace DartParser.Dart.Objects.BaseTypes
+public interface IHasData<T>
 {
-    public interface IHasData<T>
-    {
-        ulong Length { get; }
-        T?[] Data { get; set; }
-    }
+    ulong Length { get; }
+    T?[] Data { get; set; }
 }

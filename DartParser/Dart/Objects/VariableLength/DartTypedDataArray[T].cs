@@ -1,6 +1,5 @@
-﻿using Semver;
-using DartParser.Dart.Objects.BaseTypes;
-using DotNext;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using Semver;
 
 namespace DartParser.Dart.Objects.VariableLength;
 

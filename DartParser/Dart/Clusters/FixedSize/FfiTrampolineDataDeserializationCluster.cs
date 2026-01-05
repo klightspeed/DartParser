@@ -1,4 +1,3 @@
-using DartParser.Dart;
 using DartParser.Dart.Clusters.BaseTypes;
 using DartParser.Dart.Objects.FixedSize;
 

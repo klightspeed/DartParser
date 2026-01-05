@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace DartParser;
 
-namespace DartParser
+[AttributeUsage(AttributeTargets.Property)]
+public class DartVersionRangeAttribute(string versionRange) : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class DartVersionRangeAttribute(string versionRange) : Attribute
-    {
-        public string VersionRange { get; set; } = versionRange;
-    }
+    public string VersionRange { get; set; } = versionRange;
 }

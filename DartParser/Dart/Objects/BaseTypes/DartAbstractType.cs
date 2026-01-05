@@ -1,6 +1,4 @@
-﻿using DartParser.Dart.Objects.Other;
-
-namespace DartParser.Dart.Objects.BaseTypes;
+﻿namespace DartParser.Dart.Objects.BaseTypes;
 
 public class DartAbstractType(ClassId cid) : DartInstance(cid)
 {

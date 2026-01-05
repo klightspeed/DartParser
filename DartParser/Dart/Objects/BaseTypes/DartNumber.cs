@@ -1,8 +1,5 @@
-﻿using System.Diagnostics;
+﻿namespace DartParser.Dart.Objects.BaseTypes;
 
-namespace DartParser.Dart.Objects.BaseTypes
+public class DartNumber(ClassId cid) : DartInstance(cid)
 {
-    public class DartNumber(ClassId cid) : DartInstance(cid)
-    {
-    }
 }

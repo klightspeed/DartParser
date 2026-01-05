@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace DartParser.Dart.Objects.BaseTypes;
 
-namespace DartParser.Dart.Objects.BaseTypes
+public interface IHasOwner
 {
-    public interface IHasOwner
-    {
-        DartObject? Owner { get; }
-    }
+    DartObject? Owner { get; }
 }
