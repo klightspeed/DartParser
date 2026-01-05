@@ -1,14 +1,9 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
 using Semver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartUnlinkedCall() : DartCallSiteData(ClassId.kUnlinkedCallCid), IDartObject<DartUnlinkedCall>
+    public class DartUnlinkedCall() : DartCallSiteData(ClassId.kUnlinkedCallCid), IHasPropertySetters<DartUnlinkedCall>
     {
         public bool CanPatchToMonomorphic { get; set; }
 

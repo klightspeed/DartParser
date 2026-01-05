@@ -1,5 +1,5 @@
-﻿using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Singletons;
 
 namespace DartParser;
 

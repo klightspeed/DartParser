@@ -1,8 +1,4 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using DartParser.Dart.Objects.BaseTypes;
 
 namespace DartParser.Dart.Objects.ToCheck
 {

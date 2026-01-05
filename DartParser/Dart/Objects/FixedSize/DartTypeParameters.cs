@@ -1,11 +1,11 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartTypeParameters() : DartObject(ClassId.kTypeParametersCid), IDartObject<DartTypeParameters>
+public class DartTypeParameters() : DartObject(ClassId.kTypeParametersCid), IHasPropertySetters<DartTypeParameters>
 {
     public DartArray? Names { get; set; }
     public DartArray? Flags { get; set; }

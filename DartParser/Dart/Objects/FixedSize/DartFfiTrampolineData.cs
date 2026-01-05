@@ -1,12 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.BaseTypes;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartFfiTrampolineData() : DartObject(ClassId.kFfiTrampolineDataCid), IDartObject<DartFfiTrampolineData>
+public class DartFfiTrampolineData() : DartObject(ClassId.kFfiTrampolineDataCid), IHasPropertySetters<DartFfiTrampolineData>
 {
     public DartType? SignatureType { get; set; }
     public DartFunctionType? CSignature { get; set; }

@@ -193,7 +193,7 @@ namespace DartParser.Dart
         kNeverCid,
         kNumPredefinedCids,
 
-        DeletedCidStart = 0x1_0000,
+        DeletedCidStart = 0x1_0000_0000,
 
         kExternalOneByteStringCid,
         kExternalTwoByteStringCid,
@@ -223,7 +223,7 @@ namespace DartParser.Dart
         kJSRegExpCid,
         kDeoptInfoCid,
         
-        RenamedCidFlag = 0x2_0000,
+        RenamedCidFlag = 0x2_0000_0000,
         
         kLinkedHashMapCid = kMapCid | RenamedCidFlag,
         kImmutableLinkedHashMapCid = kConstMapCid | RenamedCidFlag,

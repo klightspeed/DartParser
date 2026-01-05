@@ -1,12 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.BaseTypes;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartLanguageError() : DartError(ClassId.kLanguageErrorCid), IDartObject<DartLanguageError>
+    public class DartLanguageError() : DartError(ClassId.kLanguageErrorCid), IHasPropertySetters<DartLanguageError>
     {
         public DartError? PreviousError { get; set; }
         public DartScript? Script { get; set; }

@@ -1,11 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Other;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartPatchClass() : DartObject(ClassId.kPatchClassCid), IDartObject<DartPatchClass>
+public class DartPatchClass() : DartObject(ClassId.kPatchClassCid), IHasPropertySetters<DartPatchClass>
 {
     public DartClass? WrappedClass { get; set; }
     public DartScript? Script { get; set; }

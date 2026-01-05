@@ -1,4 +1,4 @@
-﻿using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.Canonical;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

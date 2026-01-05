@@ -1,13 +1,9 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
+﻿using DartParser.Dart.Objects.BaseTypes;
 using Semver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartLoadingUnit() : DartObject(ClassId.kLoadingUnitCid), IDartObject<DartLoadingUnit>
+    public class DartLoadingUnit() : DartObject(ClassId.kLoadingUnitCid), IHasPropertySetters<DartLoadingUnit>
     {
         public DartLoadingUnit? Parent { get; set; }
         public ulong Id { get; set; }

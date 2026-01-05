@@ -1,7 +1,7 @@
 ﻿using DartParser;
 using DartParser.Dart;
-using DartParser.Dart.Clusters;
-using DartParser.Dart.Objects;
+using DartParser.Dart.Clusters.BaseTypes;
+using DartParser.Dart.Objects.BaseTypes;
 using DartParser.Dart.Objects.ToCheck;
 using Semver;
 using System.Buffers.Binary;
@@ -44,7 +44,7 @@ namespace DartParser
         public DartStream Stream { get; set; } = DartStream.Empty;
         public DartInstructionsTable InstructionsTable { get; set; } = new DartInstructionsTable();
         public DartInstructionsSection InstructionsSection { get; set; } = new DartInstructionsSection();
-        public Memory<byte> RemainingInstructionBytes { get; set; } = Memory<byte>.Empty;
+        public ReadOnlyMemory<byte> RemainingInstructionBytes { get; set; } = Memory<byte>.Empty;
         public Dictionary<Type, DartPropertySetters> Setters { get; set; } = [];
 
         public bool IsProduct => SnapshotFeatures.Contains("product");
@@ -62,7 +62,7 @@ namespace DartParser
             if (snapshotFeaturesEnd < 0) throw new InvalidDataException();
             SnapshotFeatures = Encoding.Latin1.GetString(data.Span.Slice(52, snapshotFeaturesEnd)).Split(' ');
             HeaderLength = (ulong)(52 + snapshotFeaturesEnd + 1);
-            var stream = new DartStream(data[..(int)Length]);
+            var stream = new DartStream(data[..(int)Length], IsBigEndian, Is64Bit);
             stream.Advance((int)HeaderLength);
             Stream = stream;
             NumBaseObjects = stream.ReadUnsigned();
@@ -105,7 +105,7 @@ namespace DartParser
         #region Readers
 
         public void FillFields<T>(T obj)
-            where T : DartObject, IDartObject<T>
+            where T : class, IHasPropertySetters<T>
         {
             if (Setters.GetValueOrDefault(typeof(T)) is not DartPropertySetters<T> setters)
             {
@@ -114,7 +114,37 @@ namespace DartParser
                 T.InitPropertySetters(setters, this.Version, this.Kind, this.IsProduct);
             }
 
-            setters.FillFields(obj, this);
+            setters.FillFields(ref obj, this);
+        }
+
+        public T FillFields<T>()
+            where T : IHasPropertySetters<T>, new()
+        {
+            if (Setters.GetValueOrDefault(typeof(T)) is not DartPropertySetters<T> setters)
+            {
+                Setters[typeof(T)] = setters = new();
+
+                T.InitPropertySetters(setters, this.Version, this.Kind, this.IsProduct);
+            }
+
+            T obj = new();
+
+            setters.FillFields(ref obj, this);
+
+            return obj;
+        }
+
+        public void FillFields<T>(ref T obj)
+            where T : struct, IHasPropertySetters<T>
+        {
+            if (Setters.GetValueOrDefault(typeof(T)) is not DartPropertySetters<T> setters)
+            {
+                Setters[typeof(T)] = setters = new();
+
+                T.InitPropertySetters(setters, this.Version, this.Kind, this.IsProduct);
+            }
+
+            setters.FillFields(ref obj, this);
         }
 
         public ulong ReadUnsigned()
@@ -271,21 +301,23 @@ namespace DartParser
 
         private DartInstructionsSection GetInstructionsSection()
         {
-            var sizeofUword = SizeOfUWord();
-            var data = SnapshotInstructions.AsMemory();
+            var stream = new DartStream(SnapshotInstructions, IsBigEndian, Is64Bit);
             
-            var imageSize = ReadWord(data.Span);
-            var instructionSectionOffset = ReadWord(data.Span[sizeofUword..]);
+            var imageSize = stream.ReadRaw<Word>().Value;
+            var instructionSectionOffset = stream.ReadRaw<Word>().Value;
             
-            data = data[(int)instructionSectionOffset..];
+            stream.Align(64);
             
-            var cidTag = ReadUWord(data.Span);
+            var cidTag = stream.ReadRaw<UWord>().Value;
+
             Debug.Assert(ClassTable.LookupClassId(cidTag >> 12) == ClassId.kInstructionsSectionCid);
-            
-            var payloadLength = ReadWord(data.Span[sizeofUword..]);
-            var bssOffset = ReadWord(data.Span[(sizeofUword * 2)..]);
-            var instructionRelocationOffset = ReadWord(data.Span[(sizeofUword * 3)..]);
-            var buildIdOffset = ReadWord(data.Span[(sizeofUword * 4)..]);
+
+            var payloadLength = stream.ReadRaw<Word>().Value;
+            var bssOffset = stream.ReadRaw<Word>().Value;
+            var instructionRelocationOffset = stream.ReadRaw<Word>().Value;
+            var buildIdOffset = stream.ReadRaw<Word>().Value;
+
+            stream.Align(64);
 
             return new DartInstructionsSection
             {
@@ -293,13 +325,13 @@ namespace DartParser
                 BSSOffset = bssOffset,
                 InstructionsRelocatedAddress = instructionRelocationOffset,
                 BuildIdOffset = buildIdOffset,
-                Data = data.Slice(64, (int)payloadLength)
+                Data = stream.ReadMemory((int)payloadLength)
             };
         }
 
-        public DartInstructions? GetInstructionsAt(int offset)
+        public DartInstructions? GetInstructionsAt(ulong offset)
         {
-            var data = SnapshotInstructions.AsMemory(offset);
+            var data = SnapshotInstructions.AsMemory((int)offset);
             var tags = ReadUWord(data.Span);
             var cidval = tags >> 12;
             var cid = ClassTable.LookupClassId(cidval);
@@ -307,9 +339,10 @@ namespace DartParser
             return null;
         }
 
-        public DartObject? GetObjectAt(int offset)
+        public T? GetObjectAt<T>(ulong offset)
+            where T : DartObject
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

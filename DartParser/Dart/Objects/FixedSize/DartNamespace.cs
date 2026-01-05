@@ -1,11 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartNamespace() : DartObject(ClassId.kNamespaceCid), IDartObject<DartNamespace>
+    public class DartNamespace() : DartObject(ClassId.kNamespaceCid), IHasPropertySetters<DartNamespace>
     {
         public DartLibrary? Target { get; set; }
         public DartArray? ShowNames { get; set; }

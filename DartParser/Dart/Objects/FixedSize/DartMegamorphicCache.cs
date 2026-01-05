@@ -1,14 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartMegamorphicCache() : DartCallSiteData(ClassId.kMegamorphicCacheCid), IDartObject<DartMegamorphicCache>
+    public class DartMegamorphicCache() : DartCallSiteData(ClassId.kMegamorphicCacheCid), IHasPropertySetters<DartMegamorphicCache>
     {
         public DartArray? Buckets { get; set; }
         public DartInteger? Mask { get; set; }

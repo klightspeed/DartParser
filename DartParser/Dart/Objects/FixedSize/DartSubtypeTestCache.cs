@@ -1,11 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartSubtypeTestCache() : DartObject(ClassId.kSubtypeTestCacheCid), IDartObject<DartSubtypeTestCache>
+public class DartSubtypeTestCache() : DartObject(ClassId.kSubtypeTestCacheCid), IHasPropertySetters<DartSubtypeTestCache>
 {
     public DartArray? Cache { get; set; }
     public ulong NumInputs { get; set; }

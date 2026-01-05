@@ -1,11 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartICData() : DartCallSiteData(ClassId.kICDataCid), IDartObject<DartICData>
+public class DartICData() : DartCallSiteData(ClassId.kICDataCid), IHasPropertySetters<DartICData>
 {
     public DartArray? Entries { get; set; }
     public DartAbstractType? ReceiversStaticType { get; set; }

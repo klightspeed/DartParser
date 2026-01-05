@@ -1,4 +1,4 @@
-﻿using DartParser.Dart.Objects;
+﻿using DartParser.Dart.Objects.BaseTypes;
 using System.Runtime.InteropServices;
 
 namespace DartParser

@@ -1,11 +1,9 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.BaseTypes;
+﻿using DartParser.Dart.Objects.BaseTypes;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize
 {
-    public class DartUnhandledException() : DartError(ClassId.kUnhandledExceptionCid), IDartObject<DartUnhandledException>
+    public class DartUnhandledException() : DartError(ClassId.kUnhandledExceptionCid), IHasPropertySetters<DartUnhandledException>
     {
         public DartInstance? Exception { get; set; }
         public DartInstance? StackTrace { get; set; }

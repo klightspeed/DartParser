@@ -1,11 +1,12 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.Other;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartFunction() : DartObject(ClassId.kFunctionCid), IDartObject<DartFunction>
+public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySetters<DartFunction>
 {
     public enum Kind
     {

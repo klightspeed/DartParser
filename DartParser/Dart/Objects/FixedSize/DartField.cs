@@ -1,11 +1,11 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartField() : DartObject(ClassId.kFieldCid), IDartObject<DartField>
+public class DartField() : DartObject(ClassId.kFieldCid), IHasPropertySetters<DartField>
 {
     public DartString? Name { get; set; }
     public DartObject? Owner { get; set; }

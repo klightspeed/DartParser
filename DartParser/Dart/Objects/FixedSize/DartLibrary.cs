@@ -1,11 +1,12 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.Other;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartLibrary() : DartObject(ClassId.kLibraryCid), IDartObject<DartLibrary>
+public class DartLibrary() : DartObject(ClassId.kLibraryCid), IHasPropertySetters<DartLibrary>
 {
     public DartString? Name { get; set; }
     public DartString? Url { get; set; }

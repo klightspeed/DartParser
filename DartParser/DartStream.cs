@@ -1,13 +1,12 @@
 ﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace DartParser
 {
-    public class DartStream(Memory<byte> buffer)
+    public class DartStream(Memory<byte> buffer, bool isBigEndian, bool is64Bit)
     {
         const int kDataBitsPerByte = 7;
         const int kByteMask = (1 << kDataBitsPerByte) - 1;
@@ -17,11 +16,14 @@ namespace DartParser
         const int kEndByteMarker = (byte.MaxValue - kMaxDataPerByte);
         const int kEndUnsignedByteMarker = (byte.MaxValue - kMaxUnsignedDataPerByte);
 
-
         private readonly Memory<byte> Buffer = buffer;
         private Memory<byte> Current = buffer;
 
-        public static DartStream Empty { get; } = new DartStream(Memory<byte>.Empty);
+        public bool IsBigEndian { get; } = isBigEndian;
+        public bool Is64Bit { get; } = is64Bit;
+        public bool IsOppositeEndianness => IsBigEndian == BitConverter.IsLittleEndian;
+
+        public static DartStream Empty { get; } = new DartStream(Memory<byte>.Empty, false, false);
 
         public void ReadBytes(Span<byte> buffer, int len)
         {
@@ -56,6 +58,7 @@ namespace DartParser
 
         public int PendingBytes => Current.Length;
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void Align(int alignment, int offset = 0)
         {
             if (alignment <= 0) throw new ArgumentException("alignment must be greater than 0", nameof(alignment));
@@ -197,5 +200,124 @@ namespace DartParser
 
             return val;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public void ReadBytes(Span<byte> buffer)
+            => ReadBytes(buffer, buffer.Length);
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public T ReadRaw<T>()
+            where T : struct
+            => ReadRawAligned<T>(1);
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public T ReadRawAligned<T>(int align = -1)
+            where T : struct
+        {
+            if (typeof(T) != typeof(Vector128<int>)
+                && typeof(T) != typeof(Vector128<float>)
+                && typeof(T) != typeof(Vector128<double>)
+                && typeof(T) != typeof(byte)
+                && typeof(T) != typeof(sbyte)
+                && typeof(T) != typeof(short)
+                && typeof(T) != typeof(ushort)
+                && typeof(T) != typeof(int)
+                && typeof(T) != typeof(uint)
+                && typeof(T) != typeof(long)
+                && typeof(T) != typeof(ulong)
+                && typeof(T) != typeof(float)
+                && typeof(T) != typeof(double)
+                && typeof(T) != typeof(UWord)
+                && typeof(T) != typeof(Word))
+            {
+                throw new NotSupportedException();
+            }
+
+            int size = default(T) switch
+            {
+                byte or sbyte => 1,
+                short or ushort => 2,
+                int or uint or float => 4,
+                long or ulong or double => 8,
+                Vector128<int> or Vector128<float> or Vector128<double> => 16,
+                Word or UWord => Is64Bit ? 8 : 4,
+                _ => Unsafe.SizeOf<T>()
+            };
+
+            if (align > 0 && (align & (align - 1)) != 0)
+            {
+                align = -1;
+            }
+
+            align = (align, default(T)) switch
+            {
+                (> 0, _) => align,
+                (0, _) => 1,
+                (_, byte or sbyte) => 1,
+                (_, short or ushort) => 2,
+                (_, int or uint or float) => 4,
+                (_, long or ulong or double or Vector128<int> or Vector128<float> or Vector128<double>) => 8,
+                (_, Word or UWord) => Is64Bit ? 8 : 4,
+                _ => Unsafe.SizeOf<T>()
+            };
+
+            int offset = (default(T), Is64Bit, IsBigEndian) switch
+            {
+                (Word or UWord, false, true) => 4,
+                _ => 0
+            };
+
+            Align(align);
+            Span<byte> span = stackalloc byte[Unsafe.SizeOf<T>()];
+            ReadBytes(span[offset..], size);
+
+            if (IsOppositeEndianness)
+            {
+                span.Reverse();
+            }
+
+            return MemoryMarshal.Read<T>(span);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public T[] ReadTypedData<T>(int length)
+            where T : struct
+        {
+            if (typeof(T) != typeof(Vector128<int>)
+                && typeof(T) != typeof(Vector128<float>)
+                && typeof(T) != typeof(Vector128<double>)
+                && typeof(T) != typeof(byte)
+                && typeof(T) != typeof(sbyte)
+                && typeof(T) != typeof(short)
+                && typeof(T) != typeof(ushort)
+                && typeof(T) != typeof(int)
+                && typeof(T) != typeof(uint)
+                && typeof(T) != typeof(long)
+                && typeof(T) != typeof(ulong)
+                && typeof(T) != typeof(float)
+                && typeof(T) != typeof(double))
+            {
+                throw new NotSupportedException();
+            }
+
+            var data = new T[length];
+            var span = data.AsSpan();
+            ReadBytes(MemoryMarshal.AsBytes(span));
+
+            if (IsOppositeEndianness)
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    MemoryMarshal.AsBytes(span.Slice(i, 1)).Reverse();
+                }
+            }
+
+            return data;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public T[] ReadTypedData<T>()
+            where T : struct
+            => ReadTypedData<T>((int)ReadUnsigned());
     }
 }

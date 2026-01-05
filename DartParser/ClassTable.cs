@@ -1,12 +1,13 @@
 ﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
+using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.Other;
+using DartParser.Dart.Objects.Singletons;
 using DartParser.Dart.Objects.ToCheck;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Text;
 
 namespace DartParser
 {

@@ -1,11 +1,11 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Canonical;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartScript() : DartObject(ClassId.kScriptCid), IDartObject<DartScript>
+public class DartScript() : DartObject(ClassId.kScriptCid), IHasPropertySetters<DartScript>
 {
     public DartString? Url { get; set; }
     public DartString? ResolvedUrl { get; set; }

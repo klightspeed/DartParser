@@ -1,11 +1,10 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects;
-using DartParser.Dart.Objects.ToCheck;
+﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.VariableLength;
 using Semver;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-public class DartClosureData() : DartObject(ClassId.kClosureDataCid), IDartObject<DartClosureData>
+public class DartClosureData() : DartObject(ClassId.kClosureDataCid), IHasPropertySetters<DartClosureData>
 {
     public DartContextScope? ContextScope { get; set; }
     public DartFunction? ParentFunction { get; set; }
