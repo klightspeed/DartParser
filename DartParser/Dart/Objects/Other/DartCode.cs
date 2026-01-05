@@ -2,10 +2,12 @@
 using DartParser.Dart.Objects.ToCheck;
 using DartParser.Dart.Objects.VariableLength;
 using Semver;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace DartParser.Dart.Objects.Other;
 
+[DebuggerDisplay("{Type} {EntryPoint,h} ({Owner})")]
 public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<DartCode>, IHasOwner
 {
     public DartObjectPool? ObjectPool { get; set; }
@@ -26,16 +28,16 @@ public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<Dart
 
     public bool Deferred { get; set; }
     public bool HasMonomorphicEntryPoint { get; set; }
-    public ulong EntryPoint { get; set; }
-    public ulong UncheckedEntryPoint { get; set; }
-    public ulong MonomorphicEntryPoint { get; set; }
-    public ulong MonomorphicUncheckedEntryPoint { get; set; }
+    public long EntryPoint { get; set; }
+    public long UncheckedEntryPoint { get; set; }
+    public long MonomorphicEntryPoint { get; set; }
+    public long MonomorphicUncheckedEntryPoint { get; set; }
     public ulong CompileTimestamp { get; set; }
     public ulong StateBits { get; set; }
-    public ulong InstructionsOffset { get; set; }
-    public ulong UncheckedOffset { get; set; }
-    public ulong ActiveOffset { get; set; }
-    public ulong ActiveUncheckedOffset { get; set; }
+    public long InstructionsOffset { get; set; }
+    public long UncheckedOffset { get; set; }
+    public long ActiveOffset { get; set; }
+    public long ActiveUncheckedOffset { get; set; }
     public ulong InstructionsLength { get; set; }
 
     public bool Optimized => (StateBits & 1) != 0;
@@ -102,24 +104,25 @@ public class DartCode() : DartObject(ClassId.kCodeCid), IHasPropertySetters<Dart
             var entry = snapshot.InstructionsTable.ROData.Entries.Span[index];
 
             var payloadInfo = snapshot.ReadUnsigned();
-            var uncheckedOffset = payloadInfo >> 1;
+            var uncheckedOffset = (long)(payloadInfo >> 1);
             var hasMonomorphicEntryPoint = (payloadInfo & 1) != 0;
             this.UncheckedOffset = uncheckedOffset;
             this.HasMonomorphicEntryPoint = hasMonomorphicEntryPoint;
             var entryOffset = hasMonomorphicEntryPoint ? polyOffset : 0;
             var entryMonoOffset = hasMonomorphicEntryPoint ? monoOffset : 0;
-            EntryPoint = entry.PCOffset + entryOffset;
+            var entryPoint = snapshot.InstructionsSection.InstructionsRelocatedAddress + entry.PCOffset;
+            EntryPoint = entryPoint + entryOffset;
             UncheckedEntryPoint = EntryPoint + uncheckedOffset;
-            MonomorphicEntryPoint = entry.PCOffset + entryMonoOffset;
+            MonomorphicEntryPoint = entryPoint + entryMonoOffset;
             MonomorphicUncheckedEntryPoint = MonomorphicEntryPoint + uncheckedOffset;
             snapshot.InstructionsTable.Code.Add(this);
         }
         else if (snapshot.Kind == SnapshotKind.kFullJIT)
         {
             var instructionsOffset = snapshot.Read<uint>();
-            var uncheckedOffset = snapshot.ReadUnsigned();
+            var uncheckedOffset = (long)snapshot.ReadUnsigned();
             var activeOffset = snapshot.Read<uint>();
-            var activeUncheckedOffset = snapshot.ReadUnsigned();
+            var activeUncheckedOffset = (long)snapshot.ReadUnsigned();
             InstructionsOffset = instructionsOffset;
             UncheckedOffset = uncheckedOffset;
             ActiveOffset = activeOffset;

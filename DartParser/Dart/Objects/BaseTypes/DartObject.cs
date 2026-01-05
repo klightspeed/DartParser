@@ -13,6 +13,7 @@ namespace DartParser.Dart.Objects.BaseTypes
     [DebuggerDisplay("{Type} {Description}")]
     public class DartObject : IDartObject, IHasObjectLayout<DartObject>
     {
+        public int Index { get; set; }
         public virtual string? Description { get; init; }
         public ClassId Type { get; set; }
 

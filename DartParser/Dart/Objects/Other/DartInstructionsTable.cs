@@ -1,9 +1,8 @@
 ﻿using DartParser.Dart.Objects.BaseTypes;
 using DartParser.Dart.Objects.Canonical;
-using DartParser.Dart.Objects.Other;
 using System.Diagnostics;
 
-namespace DartParser.Dart.Objects.ToCheck;
+namespace DartParser.Dart.Objects.Other;
 
 public class DartInstructionsTable() : DartObject(ClassId.kInstructionsTableCid)
 {

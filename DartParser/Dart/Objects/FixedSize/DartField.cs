@@ -2,9 +2,11 @@
 using DartParser.Dart.Objects.Canonical;
 using DartParser.Dart.Objects.VariableLength;
 using Semver;
+using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
+[DebuggerDisplay("{Type} {Name?.Value} ({Owner})")]
 public class DartField() : DartObject(ClassId.kFieldCid), IHasPropertySetters<DartField>, IHasOwner
 {
     public DartString? Name { get; set; }

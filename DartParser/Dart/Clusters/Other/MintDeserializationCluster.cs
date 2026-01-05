@@ -12,7 +12,7 @@ public class MintDeserializationCluster(bool isCanonical, bool isImmutable, Clas
 
         for (var i = 0UL; i < count; i++)
         {
-            snapshot.Objects.Add(new DartMint { Value = snapshot.Read<long>() });
+            snapshot.AddObject(new DartMint { Value = snapshot.Read<long>() });
         }
     }
 

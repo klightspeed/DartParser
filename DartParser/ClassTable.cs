@@ -1049,7 +1049,10 @@ namespace DartParser
 
             if (snapshot.Objects.Count == 0)
             {
-                snapshot.Objects.AddRange(BaseObjects);
+                foreach (var obj in BaseObjects)
+                {
+                    snapshot.AddObject(obj);
+                }
             }
         }
 

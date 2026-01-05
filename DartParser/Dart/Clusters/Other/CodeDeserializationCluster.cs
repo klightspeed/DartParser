@@ -18,7 +18,7 @@ public class CodeDeserializationCluster(bool isCanonical, bool isImmutable, Clas
         {
             var entry = ReadAllocateOne(snapshot, false);
             Entries[i] = entry;
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
         }
 
         count = snapshot.ReadUnsigned();
@@ -28,7 +28,7 @@ public class CodeDeserializationCluster(bool isCanonical, bool isImmutable, Clas
         {
             var entry = ReadAllocateOne(snapshot, true);
             Entries[i] = entry;
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
         }
     }
 

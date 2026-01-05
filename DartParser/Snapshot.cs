@@ -140,7 +140,7 @@ namespace DartParser
 
                             for (int i = 0; i < array.Data.Length; i++)
                             {
-                                array.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data[{i}]"));
+                                array.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data[]"));
                             }
 
                             break;
@@ -149,7 +149,7 @@ namespace DartParser
 
                             for (int i = 0; i < array.Data?.Data.Length; i++)
                             {
-                                array.Data.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data->Data[{i}]"));
+                                array.Data.Data[i]?.LinkedObjects.Add((obj, $"{prop.Name}->Data->Data[]"));
                             }
 
                             break;
@@ -159,7 +159,7 @@ namespace DartParser
                         case DartObject[] list:
                             for (int i = 0; i < list.Length; i++)
                             {
-                                list[i]?.LinkedObjects.Add((obj, $"{prop.Name}[{i}]"));
+                                list[i]?.LinkedObjects.Add((obj, $"{prop.Name}[]"));
                             }
                             break;
                         case IList list when elementType?.IsValueType == true:
@@ -169,7 +169,7 @@ namespace DartParser
                                 {
                                     if (subprop.GetValue(list[i]) is DartObject subobj)
                                     {
-                                        subobj.LinkedObjects.Add((obj, $"{prop.Name}[{i}].{subprop.Name}"));
+                                        subobj.LinkedObjects.Add((obj, $"{prop.Name}[].{subprop.Name}"));
                                     }
                                 }
                             }
@@ -183,6 +183,20 @@ namespace DartParser
             Isolate.PopulateObjects(this);
 
             return true;
+        }
+
+        public void AddObject(DartObject obj)
+        {
+            if (obj.Index != 0)
+            {
+                Debug.Assert(obj.Index == Objects.Count + 1);
+            }
+            else
+            {
+                obj.Index = Objects.Count + 1;
+            }
+
+            Objects.Add(obj);
         }
 
 

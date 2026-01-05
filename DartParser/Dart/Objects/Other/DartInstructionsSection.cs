@@ -1,7 +1,6 @@
-﻿using DartParser.Dart;
-using DartParser.Dart.Objects.BaseTypes;
+﻿using DartParser.Dart.Objects.BaseTypes;
 
-namespace DartParser.Dart.Objects.ToCheck;
+namespace DartParser.Dart.Objects.Other;
 
 public class DartInstructionsSection() : DartObject(ClassId.kInstructionsSectionCid)
 {

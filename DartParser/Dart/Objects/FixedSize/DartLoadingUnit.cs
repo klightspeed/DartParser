@@ -8,6 +8,8 @@ namespace DartParser.Dart.Objects.FixedSize
         public DartLoadingUnit? Parent { get; set; }
         public ulong Id { get; set; }
 
+        public List<DartLibrary> Libraries { get; } = [];
+
         public static void InitPropertySetters(DartPropertySetters<DartLoadingUnit> setters, SemVersion version, SnapshotKind kind, bool isProduct)
         {
             setters.AddRef(e => e.Parent);

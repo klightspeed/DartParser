@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-[DebuggerDisplay("{Type} {Name?.Value}")]
+[DebuggerDisplay("{Type} {Name?.Value} ({Owner})")]
 public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySetters<DartFunction>, IHasOwner
 {
     public enum Kind
@@ -55,6 +55,9 @@ public class DartFunction() : DartObject(ClassId.kFunctionCid), IHasPropertySett
     public ulong KernelOffset { get; set; }
     public ulong IsOptimizable { get; set; }
     public ulong KindTag { get; set; }
+
+    public List<DartCode> OwnedCode { get; } = [];
+    public List<DartCode> InlinedInCode { get; } = [];
 
     public static void InitPropertySetters(DartPropertySetters<DartFunction> setters, SemVersion version, SnapshotKind kind, bool isProduct)
     {

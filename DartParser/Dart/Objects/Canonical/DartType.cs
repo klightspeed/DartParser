@@ -1,4 +1,5 @@
 ﻿using DartParser.Dart.Objects.BaseTypes;
+using DartParser.Dart.Objects.Other;
 using Semver;
 
 namespace DartParser.Dart.Objects.Canonical;
@@ -8,6 +9,8 @@ public class DartType() : DartAbstractType(ClassId.kTypeCid), IHasPropertySetter
     public DartTypeArguments? Arguments { get; set; }
 
     public ulong TypeFlags { get; set; }
+
+    public List<DartClass> DeclarationClasses { get; } = [];
 
     public static void InitPropertySetters(DartPropertySetters<DartType> setters, SemVersion version, SnapshotKind kind, bool isProduct)
     {

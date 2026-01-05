@@ -30,7 +30,7 @@ public class InstanceDeserializationCluster(bool isCanonical, bool isImmutable, 
                 Fields = new DartUserDefinedInstance.Field[InstanceSizeInWords]
             };
             Entries[i] = entry;
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
         }
     }
 

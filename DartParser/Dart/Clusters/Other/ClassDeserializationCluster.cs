@@ -21,7 +21,7 @@ public class ClassDeserializationCluster(bool isCanonical, bool isImmutable, Cla
             var cid = snapshot.ReadCid();
             var cls = classTable[cid];
             Debug.Assert(cls != null);
-            snapshot.Objects.Add(cls);
+            snapshot.AddObject(cls);
             PredefinedClasses[i] = cls;
         }
 
@@ -31,7 +31,7 @@ public class ClassDeserializationCluster(bool isCanonical, bool isImmutable, Cla
         for (var i = 0UL; i < count; i++)
         {
             var cls = new DartClass();
-            snapshot.Objects.Add(cls);
+            snapshot.AddObject(cls);
             OtherClasses[i] = cls;
         }
     }

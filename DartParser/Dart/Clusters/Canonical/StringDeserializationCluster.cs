@@ -18,7 +18,7 @@ public class StringDeserializationCluster(bool isCanonical, bool isImmutable, Cl
             var cid = (lengthAndCid & 1) == 0 ? ClassId.kOneByteStringCid : ClassId.kTwoByteStringCid;
             var entry = new DartString(cid, length);
             Entries[i] = entry;
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
         }
 
         base.BuildCanonicalSetFromLayout(snapshot);

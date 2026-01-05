@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.FixedSize;
 
-[DebuggerDisplay("{Type} {Name}")]
+[DebuggerDisplay("{Type} {Url?.Value}")]
 public class DartLibrary() : DartObject(ClassId.kLibraryCid), IHasPropertySetters<DartLibrary>
 {
     public DartString? Name { get; set; }

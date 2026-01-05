@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace DartParser.Dart.Objects.Other;
 
-[DebuggerDisplay("{Type} {ClassId} {Name?.Value} ({Library?.Name?.Value})")]
+[DebuggerDisplay("{Type} {ClassId} {Name?.Value} ({Library?.Url?.Value})")]
 public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<DartClass>
 {
     public DartClass(ClassId cid) : this()
@@ -46,6 +46,9 @@ public class DartClass() : DartObject(ClassId.kClassCid), IHasPropertySetters<Da
     public ClassId ImplementorCid { get; set; }
     public ulong StateBits { get; set; }
     public ulong UnboxedFieldsBitmap { get; set; }
+
+    public List<DartFunction> OwnedFunctions { get; } = [];
+    public List<DartField> OwnedFields { get; } = [];
 
     public static void InitPropertySetters(DartPropertySetters<DartClass> setters, SemVersion version, SnapshotKind kind, bool isProduct)
     {

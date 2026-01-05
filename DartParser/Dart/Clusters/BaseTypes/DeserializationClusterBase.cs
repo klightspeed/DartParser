@@ -240,7 +240,7 @@ public class DeserializationClusterBase(bool isCanonical, bool isImmutable, Clas
         for (int i = 0; i < count; i++)
         {
             var entry = new T { Type = cid };
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
             entries[i] = entry;
         }
 
@@ -262,7 +262,7 @@ public class DeserializationClusterBase(bool isCanonical, bool isImmutable, Clas
                 Type = cid,
                 Data = new U[(int)length]
             };
-            snapshot.Objects.Add(entry);
+            snapshot.AddObject(entry);
             entries[i] = entry;
         }
 
