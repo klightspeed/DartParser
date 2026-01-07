@@ -50,7 +50,7 @@ def main():
     else:
         snapfile = '../tools/make_version.py'
 
-    snapdir = os.path.abspath(os.path.dirname(snapfile), '..')
+    snapdir = os.path.abspath(os.path.join(os.path.dirname(snapfile), '..'))
 
     snapfiles = LoadSnapshotFilesFromCurrent(snapfile)
 

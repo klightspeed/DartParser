@@ -1,0 +1,10 @@
+﻿using DartParser.Dart;
+using DartParser.Dart.Objects.BaseTypes;
+using Semver;
+
+namespace DartParser;
+
+public static partial class VersionTable
+{
+    public static readonly Dictionary<SemVersion, AddsDels<Func<ClassTable, DartObject>>> BaseObjectChanges = new()
+    {

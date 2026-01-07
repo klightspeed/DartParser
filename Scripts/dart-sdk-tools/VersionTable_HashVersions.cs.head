@@ -1,0 +1,8 @@
+﻿using Semver;
+
+namespace DartParser;
+
+public static partial class VersionTable
+{
+    private static readonly Dictionary<string, SemVersion> HashVersions = new()
+    {

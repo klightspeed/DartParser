@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# tool files
+Scripts/dart-sdk-tools/out
+Scripts/dart-sdk-tools/sdk

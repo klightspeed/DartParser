@@ -1,0 +1,5 @@
+﻿namespace DartParser;
+
+public static partial class VersionTable
+{
+    public static HashSet<string> InconsistentClassIdHashes = [
