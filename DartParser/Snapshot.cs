@@ -187,13 +187,13 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
 
     public void AddObject(DartObject obj)
     {
-        if (obj.Index != 0)
+        if (obj.ObjectIndex != 0)
         {
-            Debug.Assert(obj.Index == Objects.Count + 1);
+            Debug.Assert(obj.ObjectIndex == Objects.Count + 1);
         }
         else
         {
-            obj.Index = Objects.Count + 1;
+            obj.ObjectIndex = Objects.Count + 1;
         }
 
         Objects.Add(obj);

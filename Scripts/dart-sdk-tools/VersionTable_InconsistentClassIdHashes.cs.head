@@ -2,4 +2,4 @@
 
 public static partial class VersionTable
 {
-    public static HashSet<string> InconsistentClassIdHashes = [
+    public static readonly HashSet<string> InconsistentClassIdHashes = [
