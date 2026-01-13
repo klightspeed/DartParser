@@ -1,4 +1,6 @@
-﻿namespace DartParser;
+﻿using DartParser.Dart;
+
+namespace DartParser;
 
 public static class SnapshotKindExtensions
 {

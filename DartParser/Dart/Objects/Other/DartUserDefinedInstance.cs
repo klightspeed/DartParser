@@ -4,8 +4,6 @@ namespace DartParser.Dart.Objects.Other;
 
 public class DartUserDefinedInstance(ClassId cid) : DartInstance(cid)
 {
-    public DartClass? Class { get; set; }
-
     public record struct Field
     {
         public bool IsRawValue { get; set; }

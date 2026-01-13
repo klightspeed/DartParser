@@ -1,4 +1,4 @@
-﻿namespace DartParser;
+﻿namespace DartParser.Dart;
 
 public enum SnapshotKind : ulong
 {

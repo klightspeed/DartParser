@@ -65,13 +65,13 @@ public class DartString : DartInstance
         }
     }
 
-    public static DartString Create(UWord cidTags, ClassId cid, DartStream stream)
+    public static DartString Create(ObjectClassIdTag tags, ClassId cid, DartStream stream)
     {
         var str = new DartString(cid);
 
         if (stream.Is64Bit)
         {
-            str.Hash = (uint)(cidTags.Value >> 32);
+            str.Hash = tags.Hash;
         }
         else
         {

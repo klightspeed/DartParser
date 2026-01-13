@@ -29,18 +29,11 @@ public class DeserializationClusterBase(bool isCanonical, bool isImmutable, Clas
 
     public static DeserializationClusterBase Create(Snapshot snapshot)
     {
-        var tags = snapshot.Read<ulong>();
-        var cardRemembered = (tags & 1) != 0;
-        var isCanonical = (tags & 2) != 0;
-        var notMarked = (tags & 4) != 0;
-        var newOrEvacuationCandidate = (tags & 8) != 0;
-        var alwaysSet = (tags & 16) != 0;
-        var oldAndNotRemembered = (tags & 32) != 0;
-        var isImmutable = (tags & 64) != 0;
-        var size = (tags >> 8) & 15;
+        var tags = snapshot.ReadObjectTag();
+        var isImmutable = tags.Flags.HasFlag(ObjectTagFlags.Immutable);
+        var isCanonical = tags.Flags.HasFlag(ObjectTagFlags.Canonical);
         var isRootUnit = !snapshot.IsNonRootUnit;
-        var cidval = (tags >> 12) & 0xFFFFF;
-        var cid = snapshot.Isolate.ClassTable.LookupClassId(cidval);
+        var cid = tags.ClassId;
         var version = snapshot.Version;
 
         return cid switch

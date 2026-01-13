@@ -189,6 +189,12 @@ public class DartStream(ReadOnlyMemory<byte> buffer, bool isBigEndian, bool is64
         return classTable.LookupClassId(ReadValue<ulong>());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+    public ObjectClassIdTag ReadObjectTag(ClassTable classTable)
+    {
+        return classTable.DecodeObjectTag(ReadUnsigned());
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public ulong ReadRefId()
     {
@@ -231,7 +237,8 @@ public class DartStream(ReadOnlyMemory<byte> buffer, bool isBigEndian, bool is64
             && typeof(T) != typeof(float)
             && typeof(T) != typeof(double)
             && typeof(T) != typeof(UWord)
-            && typeof(T) != typeof(Word))
+            && typeof(T) != typeof(Word)
+            && typeof(T) != typeof(ObjectClassIdTag))
         {
             throw new NotSupportedException();
         }

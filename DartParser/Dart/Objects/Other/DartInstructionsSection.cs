@@ -8,5 +8,4 @@ public class DartInstructionsSection() : DartObject(ClassId.kInstructionsSection
     public long BSSOffset { get; set; }
     public long InstructionsRelocatedAddress { get; set; }
     public long BuildIdOffset { get; set; }
-    public ReadOnlyMemory<byte> Data { get; set; } = ReadOnlyMemory<byte>.Empty;
 }

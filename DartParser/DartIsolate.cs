@@ -74,6 +74,11 @@ public class DartIsolate(ClassTable classTable, bool isVmIsolate, bool isBigEndi
 
         foreach (var obj in Objects)
         {
+            if (ClassTable.TryGetValue(obj.Type, out var objcls))
+            {
+                obj.Class = objcls;
+            }
+
             switch (obj)
             {
                 case DartLibrary lib:

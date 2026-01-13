@@ -77,6 +77,12 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
         NumBaseObjects = stream.ReadUnsigned();
         NumObjects = stream.ReadUnsigned();
         NumClusters = stream.ReadUnsigned();
+
+        if (Version.ComparePrecedenceTo(SemVersion.Parse("2.18.0-131.0.dev-edge-4")) < 0)
+        {
+            _ = stream.ReadUnsigned(); // initial_field_table_len
+        }
+
         InstructionTableLength = stream.ReadUnsigned();
         InstructionTableDataOffset = stream.ReadUnsigned();
         Clusters.EnsureCapacity((int)NumClusters);
@@ -258,7 +264,7 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
     public T? ReadRef<T>() where T : DartObject
     {
         var refid = checked((int)Stream.ReadRefId());
-        var obj = refid == 0 ? DartObject.Null : Objects[refid - 1];
+        var obj = refid == 0 ? ClassTable.Null : Objects[refid - 1];
         return obj.Cast<T>();
     }
 
@@ -267,6 +273,12 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
 
     public ClassId ReadCid()
         => Stream.ReadCid(ClassTable);
+
+    public ObjectClassIdTag ReadObjectTag()
+        => Stream.ReadObjectTag(ClassTable);
+
+    public ObjectClassIdTag ReadObjectTagRaw()
+        => ClassTable.DecodeObjectTag(Stream.ReadRaw<UWord>().Value);
 
     public ReadOnlySpan<byte> ReadBytes(int length)
         => Stream.ReadBytes(length);
@@ -404,12 +416,12 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
         var imageSize = stream.ReadRaw<Word>().Value;
         var instructionSectionOffset = stream.ReadRaw<Word>().Value;
 
-        Debug.Assert(instructionSectionOffset >= 64 && (instructionSectionOffset & (instructionSectionOffset - 1)) == 0);
+        Debug.Assert(instructionSectionOffset >= 16 && (instructionSectionOffset & (instructionSectionOffset - 1)) == 0);
 
         stream.Align((int)instructionSectionOffset);
 
-        var cidTag = stream.ReadRaw<UWord>().Value;
-        var cid = ClassTable.LookupClassId(cidTag >> 12);
+        var tags = ClassTable.DecodeObjectTag(stream.ReadRaw<UWord>().Value);
+        var cid = tags.ClassId;
 
         Debug.Assert(cid == ClassId.kInstructionsSectionCid);
 
@@ -418,24 +430,20 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
         var instructionRelocationOffset = stream.ReadRaw<Word>().Value;
         var buildIdOffset = stream.ReadRaw<Word>().Value;
 
-        stream.Align(64);
-
         return new DartInstructionsSection
         {
             PayloadLength = payloadLength,
             BSSOffset = bssOffset,
             InstructionsRelocatedAddress = instructionRelocationOffset,
-            BuildIdOffset = buildIdOffset,
-            Data = stream.ReadMemory((int)payloadLength)
+            BuildIdOffset = buildIdOffset
         };
     }
 
     public DartInstructions? GetInstructionsAt(ulong offset)
     {
-        var data = SnapshotInstructions.AsMemory((int)offset);
-        var tags = ReadUWord(data.Span);
-        var cidval = tags >> 12;
-        var cid = ClassTable.LookupClassId(cidval);
+        var stream = new DartStream(SnapshotInstructions[(int)offset..], IsBigEndian, Is64Bit);
+        var tags = ClassTable.DecodeObjectTag(stream.ReadRaw<UWord>().Value);
+        var cid = tags.ClassId;
         if (cid != ClassId.kInstructionsCid) return null;
         return null;
     }
@@ -444,16 +452,15 @@ public class Snapshot(DartIsolate isolate, byte[] snapshotData, byte[] snapshotI
         where T : DartObject
     {
         var stream = new DartStream(DataImage[(int)offset..], IsBigEndian, Is64Bit);
-        var cidTags = stream.ReadRaw<UWord>();
-        var cidval = (cidTags.Value >> 12) & 0xFFFFF;
-        var cid = ClassTable.LookupClassId(cidval);
+        var tags = ClassTable.DecodeObjectTag(stream.ReadRaw<UWord>().Value);
+        var cid = tags.ClassId;
 
         switch (cid)
         {
             case ClassId.kOneByteStringCid:
             case ClassId.kTwoByteStringCid:
                 Debug.Assert(typeof(T) == typeof(DartString));
-                return (T)(DartObject)DartString.Create(cidTags, cid, stream);
+                return (T)(DartObject)DartString.Create(tags, cid, stream);
         }
 
         throw new NotSupportedException();

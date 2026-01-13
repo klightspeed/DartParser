@@ -1,6 +1,8 @@
 ﻿using DartParser.Dart.Objects.BaseTypes;
 using DartParser.Dart.Objects.Canonical;
+using Semver;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace DartParser.Dart.Objects.Other;
 
@@ -35,9 +37,20 @@ public class DartInstructionsTable() : DartObject(ClassId.kInstructionsTableCid)
         {
             this.Length = snapshot.InstructionTableLength;
             this.Instructions = snapshot.SnapshotInstructions;
-            var str = snapshot.GetObjectAt<DartString>(snapshot.InstructionTableDataOffset);
-            Debug.Assert(str?.OneByteData?.Length > 0);
-            var stream = new DartStream(str.OneByteData, snapshot.IsBigEndian, snapshot.Is64Bit);
+            ReadOnlyMemory<byte> data;
+
+            if (snapshot.Version.ComparePrecedenceTo(SemVersion.Parse("3.0.0")) > 0)
+            {
+                var str = snapshot.GetObjectAt<DartString>(snapshot.InstructionTableDataOffset);
+                Debug.Assert(str?.OneByteData?.Length > 0);
+                data = str.OneByteData;
+            }
+            else
+            {
+                data = snapshot.DataImage;
+            }
+
+            var stream = new DartStream(data, snapshot.IsBigEndian, snapshot.Is64Bit);
             rodata.CanonicalStackMapEntriesOffset = stream.ReadRaw<uint>();
             rodata.Length = stream.ReadRaw<uint>();
             rodata.FirstEntryWithCode = stream.ReadRaw<uint>();

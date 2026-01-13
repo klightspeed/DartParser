@@ -4,7 +4,5 @@ namespace DartParser.Dart.Objects.Singletons;
 
 public class DartNull : DartObject
 {
-    private DartNull() : base("null", ClassId.kNullCid) { }
-
-    public static DartNull Instance { get; } = new DartNull();
+    public DartNull() : base("null", ClassId.kNullCid) { }
 }

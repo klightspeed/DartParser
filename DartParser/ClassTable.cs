@@ -15,6 +15,7 @@ public class ClassTable : Dictionary<ClassId, DartClass>
 {
     private string? SnapshotVersion;
     private SemVersion? Version;
+    private bool Is64Bit;
     private List<ClassId> ClassIdLookup = [];
     private List<DartObject> BaseObjects = [];
 
@@ -38,12 +39,8 @@ public class ClassTable : Dictionary<ClassId, DartClass>
 
     public const ClassId kDeltaEncodedTypedDataCid = ClassId.kNativePointer;
 
-
-
-
-
     #region Objects
-    public DartObject Null => DartObject.Null;
+    public DartNull Null { get; } = new();
 
     public DartSentinel Sentinel { get; }
         = new() { Description = "sentinel" };
@@ -75,21 +72,21 @@ public class ClassTable : Dictionary<ClassId, DartClass>
     public DartTypeArguments EmptyTypeArguments { get; }
          = new() { Description = "<empty_type_arguments>" };
 
-    public DartBool True => DartBool.True;
+    public DartBool True { get; } = new(true);
 
-    public DartBool False => DartBool.False;
+    public DartBool False { get; } = new(false);
 
     public DartArray SyntheticGetterParameterTypes { get; }
         = new(ClassId.kArrayCid) { Description = "<synthetic getter parameter types>" };
 
     public DartArray SyntheticGetterParameterNames { get; }
-         = new(ClassId.kArrayCid) { Description = "<synthetic getter parameter names>" };
+        = new(ClassId.kArrayCid) { Description = "<synthetic getter parameter names>" };
 
     public DartArray ExtractorParameterTypes { get; }
         = new(ClassId.kArrayCid) { Description = "<extractor parameter types>" };
 
     public DartArray ExtractorParameterNames { get; }
-         = new(ClassId.kArrayCid) { Description = "<extractor parameter names>" };
+        = new(ClassId.kArrayCid) { Description = "<extractor parameter names>" };
 
     public DartContext EmptyContext { get; }
         = new() { Description = "<empty_context>" };
@@ -161,7 +158,7 @@ public class ClassTable : Dictionary<ClassId, DartClass>
             {
                 Description = $"<empty icdata entries[{n}]>",
                 Length = (ulong)n,
-                Data = [.. Enumerable.Repeat(DartObject.Null, n)]
+                Data = new DartObject[n]
             }
         )
     ];
@@ -172,7 +169,7 @@ public class ClassTable : Dictionary<ClassId, DartClass>
             {
                 Description = $"<empty icdata entries[{n}]>",
                 Length = (ulong)n,
-                Data = [.. Enumerable.Repeat(DartObject.Null, n)]
+                Data = new DartObject[n]
             }
         )
     ];
@@ -202,6 +199,7 @@ public class ClassTable : Dictionary<ClassId, DartClass>
         {
             this.SnapshotVersion = snapshot.SnapshotVersion;
             this.Version = snapshot.Version;
+            this.Is64Bit = snapshot.Is64Bit;
 
             ClassIdLookup = InitClassIdLookup(snapshot.Version);
 
@@ -270,7 +268,7 @@ public class ClassTable : Dictionary<ClassId, DartClass>
 
         }
 
-        foreach (var (changeVer, (adds, dels)) in VersionTable.BaseObjectChanges.AsEnumerable().Reverse())
+        foreach (var (changeVer, (adds, dels)) in VersionTable.BaseObjectChanges.OrderByDescending(e => e.Key, SemVersion.PrecedenceComparer))
         {
             if (snapshot.Version.ComparePrecedenceTo(changeVer) >= 0)
                 return baseObjects;
@@ -331,6 +329,57 @@ public class ClassTable : Dictionary<ClassId, DartClass>
         }
 
         return cid - (ulong)ClassIdLookup.Count + ClassId.kNumPredefinedCids;
+    }
+
+    public ObjectClassIdTag DecodeObjectTag(ulong tag)
+    {
+        ObjectTagFlags flags = 0;
+        uint size = 0;
+        ulong cidval = 0;
+        uint hash = 0;
+        List<ObjectTagFlags> flagBits = [];
+        SizeShiftBits shiftMasks = new(8, 0x0F, 12, 0xFFFFF, 32, 0xFFFFFFFF);
+
+        foreach (var (version, bits) in VersionTable.ObjectFlagBits.OrderByDescending(e => e.Key, SemVersion.PrecedenceComparer))
+        {
+            flagBits = bits;
+
+            if (Version?.ComparePrecedenceTo(version) > 0)
+            {
+                break;
+            }
+        }
+
+        foreach (var (version, (sm32, sm64)) in VersionTable.ObjectTagSizeShift.OrderByDescending(e => e.Key, SemVersion.PrecedenceComparer))
+        {
+            shiftMasks = Is64Bit ? sm64 : sm32;
+
+            if (Version?.ComparePrecedenceTo(version) > 0)
+            {
+                break;
+            }
+        }
+
+        for (int bit = 0; bit < flagBits.Count; bit++)
+        {
+            if ((tag & (1u << bit)) != 0)
+            {
+                flags |= flagBits[bit];
+            }
+        }
+
+        size = (uint)((tag >> shiftMasks.SizeShift) & shiftMasks.SizeMask);
+        cidval = (tag >> shiftMasks.ClassIdShift) & shiftMasks.ClassIdMask;
+        hash = (uint)((tag >> shiftMasks.HashShift) & shiftMasks.HashMask);
+
+        return new ObjectClassIdTag
+        {
+            RawTag = tag,
+            Flags = flags,
+            Size = size,
+            ClassId = LookupClassId(cidval),
+            Hash = hash
+        };
     }
 
     public static ClassTable CloneFromVMIsolate(DartIsolate vmIsolate)
